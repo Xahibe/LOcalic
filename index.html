@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Géolocalisation avec Leaflet</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        #map {
+            height: 400px;
+            margin: 20px auto;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+</head>
+<body>
+
+<h1>Géolocalisation avec Leaflet</h1>
+
+<p id="coordonnees" style="text-align: center;"></p>
+
+<div style="text-align: center;">
+    <button onclick="obtenirLocalisation()">Obtenir ma localisation</button>
+    <button onclick="tracerItineraire()">Tracer l'itinéraire</button>
+</div>
+
+<!-- Ajoutez une div pour afficher la carte -->
+<div id="map"></div>
+
+<script>
+    let map;
+
+    function obtenirLocalisation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                afficherPosition(position);
+                afficherCarte(position.coords.latitude, position.coords.longitude);
+                reverseGeocoding(position.coords.latitude, position.coords.longitude);
+            }, function(error) {
+                alert("Erreur de géolocalisation : " + error.message);
+            });
+        } else {
+            alert("La géolocalisation n'est pas prise en charge par votre navigateur.");
+        }
+    }
+
+    function afficherPosition(position) {
+        var latitude = position.coords.latitude;
+        var longitude = position.coords.longitude;
+
+        var coordonneesText = "Latitude : " + latitude + "<br>Longitude : " + longitude;
+
+        document.getElementById("coordonnees").innerHTML = coordonneesText;
+    }
+
+    function tracerItineraire() {
+        // Remplacez ces coordonnées par celles de votre destination
+        const destination = [48.858844, 2.294351]; // Coordonnées de la Tour Eiffel, Paris
+
+        // Utilisez Leaflet pour créer la carte
+        map = L.map('map').setView(destination, 15);
+
+        // Ajoutez une couche de tuiles OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Utilisez Leaflet Routing Machine pour tracer l'itinéraire
+        L.Routing.control({
+            waypoints: [
+                L.latLng(map.getCenter()), // Position actuelle
+                L.latLng(destination[0], destination[1]) // Destination
+            ],
+        }).addTo(map);
+    }
+
+    function reverseGeocoding(latitude, longitude) {
+        // Utilisez Leaflet pour ajouter une info-bulle avec l'adresse
+        L.marker([latitude, longitude]).addTo(map)
+            .bindPopup('Coordonnées : ' + latitude + ', ' + longitude).openPopup();
+    }
+</script>
+
+</body>
+</html>
